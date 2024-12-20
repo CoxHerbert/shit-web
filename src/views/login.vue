@@ -64,6 +64,7 @@
 import { getCodeImg } from '@/api/login';
 import Cookies from 'js-cookie';
 import { encrypt, decrypt } from '@/utils/jsencrypt';
+import cryptoUtils from '@/utils/cryptoUtils';
 import useUserStore from '@/store/modules/user';
 
 const userStore = useUserStore();
@@ -117,8 +118,12 @@ function handleLogin() {
                 Cookies.remove('rememberMe');
             }
             // 调用action的登录方法
+            const formData = {
+                ...loginForm.value,
+                password: cryptoUtils.encryptTxt(loginForm.value.password),
+            };
             userStore
-                .login(loginForm.value)
+                .login(formData)
                 .then(() => {
                     const query = route.query;
                     const otherQueryParams = Object.keys(query).reduce((acc, cur) => {

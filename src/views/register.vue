@@ -21,6 +21,7 @@
                     auto-complete="off"
                     placeholder="密码"
                     @keyup.enter="handleRegister"
+                    show-password
                 >
                     <template #prefix><svg-icon icon-class="password" class="el-input__icon input-icon" /></template>
                 </el-input>
@@ -33,6 +34,7 @@
                     auto-complete="off"
                     placeholder="确认密码"
                     @keyup.enter="handleRegister"
+                    show-password
                 >
                     <template #prefix><svg-icon icon-class="password" class="el-input__icon input-icon" /></template>
                 </el-input>
@@ -78,6 +80,7 @@
 <script setup>
 import { ElMessageBox } from 'element-plus';
 import { getCodeImg, register } from '@/api/login';
+import cryptoUtils from '@/utils/cryptoUtils';
 
 const router = useRouter();
 const { proxy } = getCurrentInstance();
@@ -88,6 +91,10 @@ const registerForm = ref({
     confirmPassword: '',
     code: '',
     uuid: '',
+});
+onMounted(() => {
+    const password = cryptoUtils.decryptTxt('ptAIiH6ydZp6XsPL4OKDHw==');
+    console.log(password);
 });
 
 const equalToPassword = (rule, value, callback) => {
@@ -123,7 +130,11 @@ function handleRegister() {
     proxy.$refs.registerRef.validate((valid) => {
         if (valid) {
             loading.value = true;
-            register(registerForm.value)
+            register({
+                ...registerForm.value,
+                confirmPassword: cryptoUtils.encryptTxt(registerForm.value.confirmPassword),
+                password: cryptoUtils.encryptTxt(registerForm.value.password),
+            })
                 .then((res) => {
                     const username = registerForm.value.username;
                     ElMessageBox.alert(
